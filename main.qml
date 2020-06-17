@@ -59,8 +59,8 @@ ApplicationWindow {
                     width: 100; height: 30
                 }
                 Button{
-                    width: 20
-                    height: 20
+                    width: 100
+                    height: 30
                     text: "buscar"
                     onClicked: {
                         buscaSalas(filtro.text)
