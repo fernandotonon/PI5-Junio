@@ -1,7 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.5
 import Qt.labs.platform 1.1
-import QtQuick.Layouts 1.15
+import QtQuick.Layouts 1.12
 import QtQuick.LocalStorage 2.0
 
 ApplicationWindow {
@@ -11,23 +11,9 @@ ApplicationWindow {
     title: qsTr("Tabs")
     property var db ;
 
-    FileDialog{
-        id: fileDialog
-        fileMode: FileDialog.OpenFiles
-        onAccepted: {
-            for(let i=0; i<files.length;i++)
-                fotosModel.append({"foto":files[i]})
-        }
-        nameFilters: "Imagens (*.bmp *.jpg *.jpeg *.png *.svg *.gif)"
-    }
-
     ListModel{
         id:salasModel
     }
-    ListModel{
-        id:fotosModel
-    }
-
 
     SwipeView {
         id: swipeView
@@ -35,11 +21,14 @@ ApplicationWindow {
         currentIndex: tabBar.currentIndex
 
         Repeater {
-                 model: 6
+                 model: salasModel
+                 //delegate: novaSala
                  Loader {
                      active: SwipeView.isCurrentItem || SwipeView.isNextItem || SwipeView.isPreviousItem
-                     sourceComponent: Text {
-                         text: index
+                     sourceComponent: Sala {
+                         nomeSala:nome;
+                         descricaoSala: descricao;
+                         fotosSala: fotos;
                          Component.onCompleted: console.log("created:", index)
                          Component.onDestruction: console.log("destroyed:", index)
                      }
@@ -47,61 +36,35 @@ ApplicationWindow {
              }
     }
 
-    Rectangle{
+    Sala{
         id:novaSala
+        visible: false
+        edicao:true
+    }
+
+    Rectangle{
+        id:filtroLayout
         anchors.fill: parent
-       // visible: false
+        visible: false
         ColumnLayout{
             anchors.fill: parent
             Row{
-                anchors.horizontalCenter: parent.horizontalCenter
+                Layout.alignment:Qt.AlignCenter
                 spacing: 20
                 Text {
-                    text: "Fotos:"
+                    text: "Filtro:"
+                }
+                TextField{
+                    id:filtro
+                    width: 100; height: 30
                 }
                 Button{
                     width: 20
                     height: 20
-                    text: "+"
-                    onClicked: fileDialog.open()
-                }
-            }
-            GridView{
-                model:fotosModel
-                width: 300; height: 200
-                cellWidth: 100; cellHeight: 100
-                anchors.horizontalCenter: parent.horizontalCenter
-                delegate:
-                    Image {
-                        width: 100
-                        height: 100
-                        source: foto
-                    }
-            }
-            Row{
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 10
-                Text {
-                    text: "Nome:"
-                }
-                TextField{
-                    width: 100; height: 30
-                }
-            }
-            Row{
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 10
-                Text {
-                    text: "Descrição:"
-                }
-                Rectangle{
-                    width: 100; height: 100
-                    border.width: 1
-                    ScrollView{
-                        anchors.fill: parent
-                        TextArea{
-                            anchors.fill: parent
-                        }
+                    text: "buscar"
+                    onClicked: {
+                        buscaSalas(filtro.text)
+                        filtroLayout.visible=false
                     }
                 }
             }
@@ -110,7 +73,6 @@ ApplicationWindow {
 
     footer: TabBar {
         id: tabBar
-        currentIndex: swipeView.currentIndex
 
         TabButton {
             text: qsTr("Novo")
@@ -118,16 +80,16 @@ ApplicationWindow {
         }
         TabButton {
             text: qsTr("Filtrar")
+            onClicked: filtroLayout.visible=true
         }
     }
 
     Component.onCompleted: {
         dbInit()
-        leDados()
-    }
+        buscaSalas("")
 
-    Component.onDestruction: {
-        gravaDados()
+        //limpa o banco
+        //db.transaction(function(tx){tx.executeSql('delete from sqlitedemotable');});
     }
 
     function dbInit(){
@@ -141,58 +103,56 @@ ApplicationWindow {
     }
 
 
-    function gravaDados(){
+    function updateSala(nome, obj){
         console.log(" Armazenando dados...")
 
         if (!db){
             return ;
-        }
+        }console.log(JSON.stringify(obj))
+        var salaObj={};
+        salaObj.nome = obj.nome
+        salaObj.descricao = obj.descricao
+        salaObj.fotos = obj.fotos
 
         db.transaction(function(tx){
-            var result = tx.executeSql('SELECT * from sqlitedemotable where nome = "sqlitedemo"');
-
-            var obj = { x: rootId.x, y: rootId.y,
-                width : rootId.width,height : rootId.height,
-                colorred : containedRectId.color.r,colorgreen : containedRectId.color.g ,
-                colorblue : containedRectId.color.b };
+            var result = tx.executeSql('SELECT * from sqlitedemotable where nome = ?',[nome]);
 
             if ( result.rows.length ===1 ){
                 console.log("Atualizando a tabela...")
-                result = tx.executeSql('UPDATE sqlitedemotable set valor=? where nome="sqlitedemo"',
-                                        [JSON.stringify(obj)])
+                result = tx.executeSql('UPDATE sqlitedemotable set valor=? where nome=?',
+                                        [JSON.stringify(salaObj),nome])
                 console.log(JSON.stringify(result));
             }else{
                 console.log("Adicionando uma linha...")
                 result = tx.executeSql('INSERT INTO sqlitedemotable VALUES (?,?)',
-                                        ['sqlitedemo', JSON.stringify(obj)])
+                                        [nome, JSON.stringify(salaObj)])
             }
 
         });
 
     }
 
-
-    function leDados(){
+    function buscaSalas(filtro){
         console.log(" Lendo dados...")
 
         if (!db){
             return ;
         }
 
+        salasModel.clear();
+
+        filtro = "%"+filtro+"%"
+
         db.transaction( function(tx) {
             print('... Lendo dados do database')
-            var result = tx.executeSql('select * from sqlitedemotable where nome="sqlitedemo"');
+            var result = tx.executeSql('select * from sqlitedemotable where valor like ?',
+                                       [filtro]);
 
-            if(result.rows.length === 1){
-
-                var valor = result.rows[0].valor;
+            for(let i = 0; i<result.rows.length;i++){
+                var valor = result.rows[i].valor;
                 var obj = JSON.parse(valor)
-
-                rootId.x = obj.x;
-                rootId.y = obj.y;
-                rootId.width= obj.width;
-                rootId.height = obj.height
-                containedRectId.color= Qt.rgba(obj.colorred,obj.colorgreen,obj.colorblue,1)
+                salasModel.append(obj)
+                console.log(JSON.stringify(obj))
             }
 
         });
