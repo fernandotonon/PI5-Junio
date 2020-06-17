@@ -90,15 +90,17 @@ Rectangle{
             Text {
                 text: "Descrição:"
             }
-            Rectangle{
-                width: 100; height: 100
-                border.width: 1
-                ScrollView{
+            ScrollView{
+                width: sala.width-100; height: 100
+                TextArea{
+                    id:descricao
                     anchors.fill: parent
-                    TextArea{
-                        id:descricao
+                    implicitWidth: sala.width-100
+                    implicitHeight: 100
+                    enabled: edicao
+                    background: Rectangle{
                         anchors.fill: parent
-                        enabled: edicao
+                        border.width: 1
                     }
                 }
             }
