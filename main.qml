@@ -13,13 +13,21 @@ ApplicationWindow {
 
     FileDialog{
         id: fileDialog
-        fileMode: fileDialog.OpenFiles
-        onAccepted: console.log(files)
+        fileMode: FileDialog.OpenFiles
+        onAccepted: {
+            for(let i=0; i<files.length;i++)
+                fotosModel.append({"foto":files[i]})
+        }
+        nameFilters: "Imagens (*.bmp *.jpg *.jpeg *.png *.svg *.gif)"
     }
 
     ListModel{
         id:salasModel
     }
+    ListModel{
+        id:fotosModel
+    }
+
 
     SwipeView {
         id: swipeView
@@ -55,9 +63,48 @@ ApplicationWindow {
                     width: 20
                     height: 20
                     text: "+"
+                    onClicked: fileDialog.open()
                 }
             }
-
+            GridView{
+                model:fotosModel
+                width: 300; height: 200
+                cellWidth: 100; cellHeight: 100
+                anchors.horizontalCenter: parent.horizontalCenter
+                delegate:
+                    Image {
+                        width: 100
+                        height: 100
+                        source: foto
+                    }
+            }
+            Row{
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 10
+                Text {
+                    text: "Nome:"
+                }
+                TextField{
+                    width: 100; height: 30
+                }
+            }
+            Row{
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 10
+                Text {
+                    text: "Descrição:"
+                }
+                Rectangle{
+                    width: 100; height: 100
+                    border.width: 1
+                    ScrollView{
+                        anchors.fill: parent
+                        TextArea{
+                            anchors.fill: parent
+                        }
+                    }
+                }
+            }
         }
     }
 
