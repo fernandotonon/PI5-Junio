@@ -18,7 +18,6 @@ ApplicationWindow {
     SwipeView {
         id: swipeView
         anchors.fill: parent
-        currentIndex: tabBar.currentIndex
 
         Repeater {
                  model: salasModel
@@ -71,8 +70,57 @@ ApplicationWindow {
         }
     }
 
+    Rectangle{
+        id:telaLogin
+        anchors.fill: parent
+        Column{
+            anchors.centerIn: parent
+            spacing: 10
+
+            Image{
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 200
+                height: 200
+                source: "http://www.univag.com.br/storage/cache/default/400x250/news/__acd372841289b14dade72301f2b57ba64c8506ed__/logounivag.jpg"
+            }
+
+            Row{
+                anchors.horizontalCenter: parent.horizontalCenter
+                Text{
+                    text:"Login: "
+                }
+                TextField{
+                    width: 100
+                    height: 30
+                }
+            }
+            Row{
+                anchors.horizontalCenter: parent.horizontalCenter
+                Text{
+                    text:"Senha: "
+                }
+                TextField{
+                    width: 100
+                    height: 30
+                    echoMode: TextInput.Password
+                }
+            }
+            Row{
+                anchors.horizontalCenter: parent.horizontalCenter
+                Button{
+                    text: "Entrar"
+                    onClicked: {
+                        tabBar.visible=true
+                        telaLogin.visible=false
+                    }
+                }
+            }
+        }
+    }
+
     footer: TabBar {
         id: tabBar
+        visible: false
 
         TabButton {
             text: qsTr("Novo")
@@ -95,7 +143,7 @@ ApplicationWindow {
     function dbInit(){
         console.log(" Iniciando banco...")
 
-        db = LocalStorage.openDatabaseSync("c:/sqlitedemodb1", "1.0", "SQLite Demo", 100000);
+        db = LocalStorage.openDatabaseSync("sqlitedemodb1", "1.0", "SQLite Demo", 100000);
         db.transaction( function(tx) {
             print('... Criando tabela')
             tx.executeSql('CREATE TABLE IF NOT EXISTS sqlitedemotable(nome TEXT, valor TEXT)');
