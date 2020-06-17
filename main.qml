@@ -42,15 +42,19 @@ ApplicationWindow {
     Rectangle{
         id:novaSala
         anchors.fill: parent
-        visible: false
+       // visible: false
         ColumnLayout{
             anchors.fill: parent
             Row{
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 20
                 Text {
                     text: "Fotos:"
                 }
                 Button{
-                    text: "Adicionar"
+                    width: 20
+                    height: 20
+                    text: "+"
                 }
             }
 
