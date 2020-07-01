@@ -21,7 +21,6 @@ ApplicationWindow {
 
         Repeater {
                  model: salasModel
-                 //delegate: novaSala
                  Loader {
                      active: SwipeView.isCurrentItem || SwipeView.isNextItem || SwipeView.isPreviousItem
                      sourceComponent: Sala {
@@ -143,7 +142,7 @@ ApplicationWindow {
     function dbInit(){
         console.log(" Iniciando banco...")
 
-        db = LocalStorage.openDatabaseSync("sqlitedemodb1", "1.0", "SQLite Demo", 100000);
+        db = LocalStorage.openDatabaseSync("c:/sqlitedemodb1", "1.0", "SQLite Demo", 100000);
         db.transaction( function(tx) {
             print('... Criando tabela')
             tx.executeSql('CREATE TABLE IF NOT EXISTS sqlitedemotable(nome TEXT, valor TEXT)');

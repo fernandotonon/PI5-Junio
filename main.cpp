@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-
+#include <QQmlContext>
+#include "converter.h"
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -15,6 +16,10 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
     engine.load(url);
+
+    Converter *c = new Converter(&app);
+    engine.rootContext()->setContextProperty("converter", c);
+
 
     return app.exec();
 }

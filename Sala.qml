@@ -1,8 +1,9 @@
-import QtQuick 2.12
+import QtQuick 2.15
 import QtQuick.Controls 2.5
 import Qt.labs.platform 1.1
 import QtQuick.Layouts 1.12
 import QtQuick.LocalStorage 2.0
+import QtMultimedia 5.14
 
 Rectangle{
     id:sala
@@ -34,6 +35,9 @@ Rectangle{
     ListModel{
         id:fotosModel
     }
+    ListModel{
+        id:fotosConvertidasModel
+    }
 
     ColumnLayout{
         anchors.fill: parent
@@ -44,30 +48,62 @@ Rectangle{
                 text: "Fotos:"
             }
             Button{
-                width: 20
+                width: 100
                 height: 20
                 visible: edicao
-                text: "+"
+                text: "Galeria"
                 onClicked: fileDialog.open()
+            }
+            Button{
+                width: 100
+                height: 20
+                visible: edicao
+                text: "Nova Foto"
+                onClicked: videoOutput.visible = true
             }
         }
 
-        TableView{
+        VideoOutput{
+            id: videoOutput
+            width: 300
+            height: 200
+            source: camera
+            visible: false
+
+            Button{
+                width: 100
+                height: 20
+                visible: edicao
+                text: "Tirar Foto"
+                onClicked: {camera.imageCapture.capture()
+                videoOutput.visible=false}
+            }
+
+            Camera{
+                id:camera
+                imageCapture.onImageSaved: fotosModel.append({"foto": "file:///"+path})
+            }
+        }
+
+        GridView{
             id:fotosView
             Layout.alignment:Qt.AlignHCenter
             width: 300;height: 200
             contentWidth:100
             contentHeight: 100
-            columnSpacing: 1
-            rowSpacing: 1
             clip: true
             model:fotosModel
             delegate:
                 Rectangle{
                     implicitWidth: 100; implicitHeight:100
+                    border.width: 1
                     Image {
-                        width: 100;height: 100
+                        anchors.fill: parent
                         source: foto
+                        Component.onCompleted: grabToImage(result=>{
+                                                           fotosConvertidasModel.append({"foto":"data:image/png;base64," + converter.toStr(result.image)})
+
+                                                           })
                     }
             }
         }
@@ -105,6 +141,7 @@ Rectangle{
                 }
             }
         }
+
         Button{
             Layout.alignment:Qt.AlignHCenter
             width: sala.width; height: 30
@@ -112,10 +149,10 @@ Rectangle{
             visible: edicao
             onClicked: {
                 var fotos=[]
-                for(let i =0;i<fotosModel.count;i++){
-                    fotos.push(fotosModel.get(i))
+                var count = 0;
+                for(let i =0;i<fotosConvertidasModel.count;i++){
+                    fotos.push(fotosConvertidasModel.get(i))
                 }
-
                 updateSala(nome.text,{"nome":nome.text,"descricao":descricao.text,"fotos":fotos})
                 sala.visible=false
                 salasModel.append({"nome":nome.text,"descricao":descricao.text,"fotos":fotos})
