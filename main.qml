@@ -3,6 +3,7 @@ import QtQuick.Controls 2.5
 import Qt.labs.platform 1.1
 import QtQuick.Layouts 1.12
 import QtQuick.LocalStorage 2.0
+import QtWebSockets 1.1
 
 ApplicationWindow {
     visible: true
@@ -10,6 +11,36 @@ ApplicationWindow {
     height: 480
     title: qsTr("PI5 - AirCNC")
     property var db ;
+
+    WebSocket{
+        id: socket
+        active: true
+        url:"ws://127.0.0.1:1234"
+
+        onTextMessageReceived: {
+            console.log(message)
+            salasModel.clear();
+            var result = JSON.parse(message)
+            for(let i = 0; i<result.length;i++){
+                var obj = JSON.parse(result[i])
+                salasModel.append(obj)
+                console.log(JSON.stringify(obj))
+            }
+        }
+
+        onStatusChanged: {
+            if(socket.status == WebSocket.Error){
+                console.log("Erro: "+socket.errorString)
+            } else if(socket.status == WebSocket.Open){
+                var obj={};
+                obj.op="buscar"
+                obj.filtro=""
+                sendTextMessage(JSON.stringify(obj))
+            } else if(socket.status == WebSocket.Closed){
+                console.log("Socket fechado")
+            }
+        }
+    }
 
     ListModel{
         id:salasModel
@@ -132,77 +163,21 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        dbInit()
         buscaSalas("")
-
-        //limpa o banco
-        //db.transaction(function(tx){tx.executeSql('delete from sqlitedemotable');});
     }
-
-    function dbInit(){
-        console.log(" Iniciando banco...")
-
-        db = LocalStorage.openDatabaseSync("c:/sqlitedemodb1", "1.0", "SQLite Demo", 100000);
-        db.transaction( function(tx) {
-            print('... Criando tabela')
-            tx.executeSql('CREATE TABLE IF NOT EXISTS sqlitedemotable(nome TEXT, valor TEXT)');
-        });
-    }
-
 
     function updateSala(nome, obj){
-        console.log(" Armazenando dados...")
-
-        if (!db){
-            return ;
-        }console.log(JSON.stringify(obj))
-        var salaObj={};
-        salaObj.nome = obj.nome
-        salaObj.descricao = obj.descricao
-        salaObj.fotos = obj.fotos
-
-        db.transaction(function(tx){
-            var result = tx.executeSql('SELECT * from sqlitedemotable where nome = ?',[nome]);
-
-            if ( result.rows.length ===1 ){
-                console.log("Atualizando a tabela...")
-                result = tx.executeSql('UPDATE sqlitedemotable set valor=? where nome=?',
-                                        [JSON.stringify(salaObj),nome])
-                console.log(JSON.stringify(result));
-            }else{
-                console.log("Adicionando uma linha...")
-                result = tx.executeSql('INSERT INTO sqlitedemotable VALUES (?,?)',
-                                        [nome, JSON.stringify(salaObj)])
-            }
-
-        });
-
+        var send={};
+        send.op="atualizar"
+        send.nome=nome
+        send.obj=obj
+        socket.sendTextMessage(JSON.stringify(send))
     }
 
     function buscaSalas(filtro){
-        console.log(" Lendo dados...")
-
-        if (!db){
-            return ;
-        }
-
-        salasModel.clear();
-
-        filtro = "%"+filtro+"%"
-
-        db.transaction( function(tx) {
-            print('... Lendo dados do database')
-            var result = tx.executeSql('select * from sqlitedemotable where valor like ?',
-                                       [filtro]);
-
-            for(let i = 0; i<result.rows.length;i++){
-                var valor = result.rows[i].valor;
-                var obj = JSON.parse(valor)
-                salasModel.append(obj)
-                console.log(JSON.stringify(obj))
-            }
-
-        });
-
+        var obj={};
+        obj.op="buscar"
+        obj.filtro=filtro
+        socket.sendTextMessage(JSON.stringify(obj))
     }
 }
