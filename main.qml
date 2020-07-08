@@ -11,6 +11,7 @@ ApplicationWindow {
     height: 480
     title: qsTr("PI5 - AirCNC")
     property var db ;
+    property int uid;
 
     WebSocket{
         id: socket
@@ -21,10 +22,22 @@ ApplicationWindow {
             console.log(message)
             salasModel.clear();
             var result = JSON.parse(message)
-            for(let i = 0; i<result.length;i++){
-                var obj = JSON.parse(result[i])
-                salasModel.append(obj)
-                console.log(JSON.stringify(obj))
+            if(result.op==="login"){
+                if(result.sucesso){
+                    uid=result.id
+                    tabBar.visible=true
+                    telaLogin.visible=false
+                    buscaSalas("")
+                } else {
+                    msgLogin.text=result.mensagem
+                }
+            } else if (result.op==="buscaSalas"){
+                for(let i = 0; i<result.list.length;i++){
+                    var obj = JSON.parse(result.list[i])
+                    var valor = JSON.parse(obj.valor)
+                    salasModel.append(valor)
+                    console.log(JSON.stringify(obj))
+                }
             }
         }
 
@@ -120,9 +133,13 @@ ApplicationWindow {
                     text:"Login: "
                 }
                 TextField{
-                    width: 100
-                    height: 30
+                    id:loginField
+                    width: 100; height: 30
                 }
+            }
+            Text {
+                id: msgLogin
+                text: " "
             }
             Row{
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -130,8 +147,8 @@ ApplicationWindow {
                     text:"Senha: "
                 }
                 TextField{
-                    width: 100
-                    height: 30
+                    id:senhaField
+                    width: 100; height: 30
                     echoMode: TextInput.Password
                 }
             }
@@ -140,8 +157,11 @@ ApplicationWindow {
                 Button{
                     text: "Entrar"
                     onClicked: {
-                        tabBar.visible=true
-                        telaLogin.visible=false
+                        var send={}
+                        send.op="login"
+                        send.login=loginField.text
+                        send.senha=Qt.md5(senhaField.text)
+                        socket.sendTextMessage(JSON.stringify(send))
                     }
                 }
             }
@@ -171,6 +191,7 @@ ApplicationWindow {
         send.op="atualizar"
         send.nome=nome
         send.obj=obj
+        send.uid=uid
         socket.sendTextMessage(JSON.stringify(send))
     }
 

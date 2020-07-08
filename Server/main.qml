@@ -24,11 +24,11 @@ ApplicationWindow {
                 console.log(message)
                 var obj = JSON.parse(message)
                 if(obj.op==="buscar"){
-                    console.log(buscaSalas(obj.filtro))
-                    webSocket.sendTextMessage("teste")
                     webSocket.sendTextMessage(buscaSalas(obj.filtro))
                 } else if(obj.op==="atualizar"){
                     updateSala(obj.nome,obj.obj)
+                } else if(obj.op==="login"){
+                    webSocket.sendTextMessage(login(obj.login,obj.senha,obj.uid))
                 }
             })
         }
@@ -116,15 +116,16 @@ ApplicationWindow {
     function dbInit(){
         console.log(" Iniciando banco...")
 
-        db = LocalStorage.openDatabaseSync("c:/sqlitedemodb1", "1.0", "SQLite Demo", 100000);
+        db = LocalStorage.openDatabaseSync("c:/PI5AirCNC", "1.0", "SQLite AirCNC", 100000);
         db.transaction( function(tx) {
             print('... Criando tabela')
-            tx.executeSql('CREATE TABLE IF NOT EXISTS salas(nome TEXT, valor TEXT)');
+            tx.executeSql('CREATE TABLE IF NOT EXISTS salas(nome TEXT, valor TEXT, usuarioID INTEGER)');
+            tx.executeSql('CREATE TABLE IF NOT EXISTS usuarios(id INTEGER PRIMARY KEY AUTOINCREMENT, login TEXT, senha TEXT)');
         });
     }
 
 
-    function updateSala(nome, obj){
+    function updateSala(nome, obj, usuario){
         console.log(" Armazenando dados...")
 
         if (!db){
@@ -141,13 +142,13 @@ ApplicationWindow {
 
             if ( result.rows.length ===1 ){
                 console.log("Atualizando a tabela...")
-                result = tx.executeSql('UPDATE salas set valor=? where nome=?',
-                                        [JSON.stringify(salaObj),nome])
+                result = tx.executeSql('UPDATE salas set valor=? where nome=? and usuarioID = ?',
+                                        [JSON.stringify(salaObj),nome, usuario])
                 console.log(JSON.stringify(result));
             }else{
                 console.log("Adicionando uma linha...")
-                result = tx.executeSql('INSERT INTO salas VALUES (?,?)',
-                                        [nome, JSON.stringify(salaObj)])
+                result = tx.executeSql('INSERT INTO salas VALUES (?,?,?)',
+                                        [nome, JSON.stringify(salaObj),usuario])
             }
 
         });
@@ -164,7 +165,9 @@ ApplicationWindow {
         salasModel.clear();
 
         filtro = "%"+filtro+"%"
-        var list = []
+        var obj = {}
+        obj.op = "buscaSalas"
+        obj.list = []
 
         db.transaction( function(tx) {
             print('... Lendo dados do database')
@@ -172,12 +175,11 @@ ApplicationWindow {
                                        [filtro]);
 
             for(let i = 0; i<result.rows.length;i++){
-                var valor = result.rows[i].valor;
-                list.push(valor)
+                obj.list.push(JSON.stringify({"valor":result.rows[i].valor,"uid":result.rows[i].usuarioID}))
             }
         });
 
-        return JSON.stringify(list);
+        return JSON.stringify(obj);
     }
 
 
@@ -205,5 +207,37 @@ ApplicationWindow {
             }
 
         });
+    }
+
+    function login(login, senha){
+        var obj = {}
+        obj.op="login"
+        obj.sucesso = false
+        if (!db){
+            obj.messagem="Erro no servidor"
+            return JSON.stringify(obj)
+        }
+        console.log(login)
+        console.log(senha)
+        db.transaction(function(tx){
+            var result = tx.executeSql('SELECT * from usuarios where login = ?',[login]);
+
+
+             console.log(result.rows[0].senha)
+            if ( result.rows.length >= 1 ){
+                obj.sucesso=(result.rows[0].senha===senha)
+                if(obj.sucesso)
+                    obj.id=result.rows[0].id
+                else
+                    obj.mensagem="Erro ao autenticar, tente novamente."
+            }else{
+                result = tx.executeSql('INSERT INTO usuarios (login,senha) VALUES (?,?)',
+                                        [login,senha])
+                obj.sucesso=true
+                console.log("novo usuário")
+            }
+
+        });
+        return JSON.stringify(obj)
     }
 }
