@@ -12,13 +12,12 @@ Rectangle{
     property alias nomeSala:nome.text
     property alias descricaoSala:descricao.text
     property var fotosSala
+    property int uidSala:0
+    onUidSalaChanged: console.log("uidSala: "+uidSala)
 
     onFotosSalaChanged: {
-        console.log("fotos: "+fotosSala)
-        console.log("fotos: "+fotosSala.count)
         for(let i =0;i<fotosSala.count;i++){
             fotosModel.append(fotosSala.get(i))
-            console.log("fotos: "+fotosSala.get(i))
         }
     }
 
@@ -102,7 +101,6 @@ Rectangle{
                         source: foto
                         Component.onCompleted: grabToImage(result=>{
                                                            fotosConvertidasModel.append({"foto":"data:image/png;base64," + converter.toStr(result.image)})
-
                                                            })
                     }
             }

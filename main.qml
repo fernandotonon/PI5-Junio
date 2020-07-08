@@ -6,12 +6,13 @@ import QtQuick.LocalStorage 2.0
 import QtWebSockets 1.1
 
 ApplicationWindow {
+    id:janela
     visible: true
     width: 640
     height: 480
     title: qsTr("PI5 - AirCNC")
     property var db ;
-    property int uid;
+    property int usuarioID;
 
     WebSocket{
         id: socket
@@ -19,12 +20,11 @@ ApplicationWindow {
         url:"ws://127.0.0.1:1234"
 
         onTextMessageReceived: {
-            console.log(message)
             salasModel.clear();
             var result = JSON.parse(message)
             if(result.op==="login"){
                 if(result.sucesso){
-                    uid=result.id
+                    usuarioID=result.id
                     tabBar.visible=true
                     telaLogin.visible=false
                     buscaSalas("")
@@ -35,8 +35,8 @@ ApplicationWindow {
                 for(let i = 0; i<result.list.length;i++){
                     var obj = JSON.parse(result.list[i])
                     var valor = JSON.parse(obj.valor)
+                    valor.uid = obj.uid
                     salasModel.append(valor)
-                    console.log(JSON.stringify(obj))
                 }
             }
         }
@@ -71,6 +71,7 @@ ApplicationWindow {
                          nomeSala:nome;
                          descricaoSala: descricao;
                          fotosSala: fotos;
+                         uidSala:uid;
                          Component.onCompleted: console.log("created:", index)
                          Component.onDestruction: console.log("destroyed:", index)
                      }
@@ -135,6 +136,7 @@ ApplicationWindow {
                 TextField{
                     id:loginField
                     width: 100; height: 30
+                    focus: true
                 }
             }
             Text {
@@ -150,19 +152,22 @@ ApplicationWindow {
                     id:senhaField
                     width: 100; height: 30
                     echoMode: TextInput.Password
+                    onAccepted: btnEntrar.entrar()
                 }
             }
             Row{
                 anchors.horizontalCenter: parent.horizontalCenter
                 Button{
+                    id:btnEntrar
                     text: "Entrar"
-                    onClicked: {
+                    function entrar(){
                         var send={}
                         send.op="login"
                         send.login=loginField.text
                         send.senha=Qt.md5(senhaField.text)
                         socket.sendTextMessage(JSON.stringify(send))
                     }
+                    onClicked: entrar()
                 }
             }
         }

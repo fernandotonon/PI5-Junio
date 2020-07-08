@@ -12,6 +12,7 @@ Rectangle{
     property alias nomeSala:nome.text
     property alias descricaoSala:descricao.text
     property var fotosSala
+    property int uidSala:0
 
     onFotosSalaChanged: {
         console.log("fotos: "+fotosSala)
