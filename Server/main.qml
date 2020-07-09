@@ -26,7 +26,9 @@ ApplicationWindow {
                 if(obj.op==="buscar"){
                     webSocket.sendTextMessage(buscaSalas(obj.filtro))
                 } else if(obj.op==="atualizar"){
-                    updateSala(obj.nome,obj.obj)
+                    updateSala(obj.nome,obj.obj,obj.uid)
+                } else if(obj.op==="remover"){
+                    removeSala(obj.nome,obj.uid)
                 } else if(obj.op==="login"){
                     webSocket.sendTextMessage(login(obj.login,obj.senha,obj.uid))
                 }
@@ -151,6 +153,17 @@ ApplicationWindow {
                                         [nome, JSON.stringify(salaObj),usuario])
             }
 
+        });
+
+    }
+
+    function removeSala(nome, usuario){
+        if (!db){
+            return ;
+        }
+
+        db.transaction(function(tx){
+            var result = tx.executeSql('DELETE FROM salas WHERE nome = ? and usuarioID = ?',[nome,usuario]);
         });
 
     }

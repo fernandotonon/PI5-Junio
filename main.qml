@@ -35,8 +35,9 @@ ApplicationWindow {
                 for(let i = 0; i<result.list.length;i++){
                     var obj = JSON.parse(result.list[i])
                     var valor = JSON.parse(obj.valor)
-                    valor.uid = obj.uid
+                    valor.uid = obj.uid?obj.uid:0;
                     salasModel.append(valor)
+                    console.log("obj.uid "+obj.uid)
                 }
             }
         }
@@ -196,7 +197,15 @@ ApplicationWindow {
         send.op="atualizar"
         send.nome=nome
         send.obj=obj
-        send.uid=uid
+        send.uid=usuarioID
+        socket.sendTextMessage(JSON.stringify(send))
+    }
+
+    function removeSala(nome){
+        var send={};
+        send.op="remover"
+        send.nome=nome
+        send.uid=usuarioID
         socket.sendTextMessage(JSON.stringify(send))
     }
 

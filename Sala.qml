@@ -60,6 +60,13 @@ Rectangle{
                 text: "Nova Foto"
                 onClicked: videoOutput.visible = true
             }
+            Button{
+                width: 100
+                height: 20
+                visible: uidSala===janela.usuarioID&&!edicao
+                text: "Remover"
+                onClicked: removeSala(nomeSala)
+            }
         }
 
         VideoOutput{
