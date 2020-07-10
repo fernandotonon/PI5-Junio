@@ -96,7 +96,7 @@ ApplicationWindow {
     MessageDialog{
         id:dialog
         text:"deseja excluir todos os dados?"
-        onAccepted: db.transaction(function(tx){tx.executeSql('delete from sqlitedemotable');});
+        onAccepted: db.transaction(function(tx){tx.executeSql('delete from salas');});
     }
     footer: TabBar {
         id: tabBar
@@ -235,8 +235,6 @@ ApplicationWindow {
         db.transaction(function(tx){
             var result = tx.executeSql('SELECT * from usuarios where login = ?',[login]);
 
-
-             console.log(result.rows[0].senha)
             if ( result.rows.length >= 1 ){
                 obj.sucesso=(result.rows[0].senha===senha)
                 if(obj.sucesso)

@@ -17,7 +17,7 @@ ApplicationWindow {
     WebSocket{
         id: socket
         active: true
-        url:"ws://127.0.0.1:1234"
+        url:"ws://"+servidorField.text+":1234"
 
         onTextMessageReceived: {
             salasModel.clear();
@@ -72,6 +72,10 @@ ApplicationWindow {
                          nomeSala:nome;
                          descricaoSala: descricao;
                          fotosSala: fotos;
+                         telefoneSala:telefone;
+                         valorSala:valor;
+                         enderecoSala:endereco;
+                         tipoSala:tipo;
                          uidSala:uid;
                          Component.onCompleted: console.log("created:", index)
                          Component.onDestruction: console.log("destroyed:", index)
@@ -118,21 +122,50 @@ ApplicationWindow {
     Rectangle{
         id:telaLogin
         anchors.fill: parent
+
+        Image{
+            anchors.fill:parent
+            source: "index.jpeg"
+        }
+
         Column{
             anchors.centerIn: parent
             spacing: 10
 
             Image{
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: 200
-                height: 200
-                source: "http://www.univag.com.br/storage/cache/default/400x250/news/__acd372841289b14dade72301f2b57ba64c8506ed__/logounivag.jpg"
+                height: 100
+                fillMode: Image.PreserveAspectFit
+                source: "logo.png"
+            }
+
+            Text{
+                anchors.horizontalCenter: parent.horizontalCenter
+                text:"AirCNC"
+                color: "white"
+                font.bold: true
+                font.pixelSize: 30
+            }
+
+            Row{
+                anchors.horizontalCenter: parent.horizontalCenter
+                Text{
+                    text:"Servidor: "
+                    color: "white"
+                }
+                TextField{
+                    id:servidorField
+                    width: 100; height: 30
+                    focus: true
+                    text:"127.0.0.1"
+                }
             }
 
             Row{
                 anchors.horizontalCenter: parent.horizontalCenter
                 Text{
                     text:"Login: "
+                    color: "white"
                 }
                 TextField{
                     id:loginField
@@ -140,14 +173,11 @@ ApplicationWindow {
                     focus: true
                 }
             }
-            Text {
-                id: msgLogin
-                text: " "
-            }
             Row{
                 anchors.horizontalCenter: parent.horizontalCenter
                 Text{
                     text:"Senha: "
+                    color: "white"
                 }
                 TextField{
                     id:senhaField
@@ -156,12 +186,17 @@ ApplicationWindow {
                     onAccepted: btnEntrar.entrar()
                 }
             }
+            Text {
+                id: msgLogin
+                text: " "
+            }
             Row{
                 anchors.horizontalCenter: parent.horizontalCenter
                 Button{
                     id:btnEntrar
                     text: "Entrar"
                     function entrar(){
+                        socket.active=true
                         var send={}
                         send.op="login"
                         send.login=loginField.text
@@ -170,6 +205,19 @@ ApplicationWindow {
                     }
                     onClicked: entrar()
                 }
+            }
+            Button{
+                anchors.horizontalCenter: parent.horizontalCenter
+                id:btnCadastrar
+                text: "Cadastrar"
+                function entrar(){
+                    var send={}
+                    send.op="login"
+                    send.login=loginField.text
+                    send.senha=Qt.md5(senhaField.text)
+                    socket.sendTextMessage(JSON.stringify(send))
+                }
+                onClicked: entrar()
             }
         }
     }

@@ -11,6 +11,10 @@ Rectangle{
     property bool edicao: false
     property alias nomeSala:nome.text
     property alias descricaoSala:descricao.text
+    property alias telefoneSala:telefone.text
+    property alias valorSala:valor.text
+    property alias enderecoSala:endereco.text
+    property alias tipoSala:cbTipo.currentIndex
     property var fotosSala
     property int uidSala:0
 
@@ -110,19 +114,77 @@ Rectangle{
         }
 
         Row{
-            Layout.alignment:Qt.AlignHCenter
+            //Layout.alignment:Qt.AlignHCenter
             spacing: 10
             Text {
-                text: "Nome:"
+                text: "Nome: "
             }
             TextField{
                 id:nome
+                width: 300; height: 30
+                enabled: edicao
+            }
+        }
+        Row{
+            //Layout.alignment:Qt.AlignHCenter
+            spacing: 10
+            Text {
+                text: "Valor:"
+            }
+            TextField{
+                id:valor
                 width: 100; height: 30
                 enabled: edicao
             }
         }
         Row{
-            Layout.alignment:Qt.AlignHCenter
+           // Layout.alignment:Qt.AlignHCenter
+            spacing: 10
+            Text {
+                text: "Tipo:"
+            }
+            ComboBox{
+                id:cbTipo
+                width: 200; height: 30
+                enabled: edicao
+                model: ["Escritório","Comercial","Consultório","Reuniões","Outro"]
+            }
+        }
+        Row{
+          //  Layout.alignment:Qt.AlignHCenter
+            spacing: 10
+            Text {
+                text: "Telefone:"
+            }
+            TextField{
+                id:telefone
+                width: 100; height: 30
+                enabled: edicao
+            }
+        }
+        Row{
+           // Layout.alignment:Qt.AlignHCenter
+            spacing: 10
+            Text {
+                text: "Endereço:"
+            }
+            ScrollView{
+                width: sala.width-100; height: 100
+                TextArea{
+                    id:endereco
+                    anchors.fill: parent
+                    implicitWidth: sala.width-100
+                    implicitHeight: 100
+                    enabled: edicao
+                    background: Rectangle{
+                        anchors.fill: parent
+                        border.width: 1
+                    }
+                }
+            }
+        }
+        Row{
+         //   Layout.alignment:Qt.AlignHCenter
             spacing: 10
             Text {
                 text: "Descrição:"

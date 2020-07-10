@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Sala.qml</file>
+        <file>index.jpeg</file>
+        <file>logo.png</file>
     </qresource>
 </RCC>

@@ -10,9 +10,14 @@ Rectangle{
     anchors.fill: parent
     property bool edicao: false
     property alias nomeSala:nome.text
+    property alias telefoneSala:telefone.text
+    property alias valorSala:valor.text
+    property alias enderecoSala:endereco.text
+    property alias tipoSala:cbTipo.currentIndex
     property alias descricaoSala:descricao.text
     property var fotosSala
     property int uidSala:0
+    property int wItens: 60
     onUidSalaChanged: console.log("uidSala: "+uidSala)
 
     onFotosSalaChanged: {
@@ -38,129 +43,194 @@ Rectangle{
         id:fotosConvertidasModel
     }
 
-    ColumnLayout{
-        anchors.fill: parent
-        Row{
-            Layout.alignment:Qt.AlignHCenter
-            spacing: 20
-            Text {
-                text: "Fotos:"
-            }
-            Button{
-                width: 100
-                height: 20
-                visible: edicao
-                text: "Galeria"
-                onClicked: fileDialog.open()
-            }
-            Button{
-                width: 100
-                height: 20
-                visible: edicao
-                text: "Nova Foto"
-                onClicked: videoOutput.visible = true
-            }
-            Button{
-                width: 100
-                height: 20
-                visible: uidSala===janela.usuarioID&&!edicao
-                text: "Remover"
-                onClicked: removeSala(nomeSala)
-            }
-        }
+    ScrollView{
+        width: parent.width
+        height : parent.height
+        clip : true
+        Column{
+            anchors.fill: sala
+            spacing: 5
 
-        VideoOutput{
-            id: videoOutput
-            width: 300
-            height: 200
-            source: camera
-            visible: false
-
-            Button{
-                width: 100
-                height: 20
-                visible: edicao
-                text: "Tirar Foto"
-                onClicked: {camera.imageCapture.capture()
-                videoOutput.visible=false}
+            Row{
+                Layout.alignment:Qt.AlignHCenter
+                spacing: 20
+                Text {
+                    text: "Fotos:"
+                }
+                Button{
+                    width: 100
+                    height: 20
+                    visible: edicao
+                    text: "Galeria"
+                    onClicked: fileDialog.open()
+                }
+                Button{
+                    width: 100
+                    height: 20
+                    visible: edicao
+                    text: "Nova Foto"
+                    onClicked: videoOutput.visible = true
+                }
+                Button{
+                    width: 100
+                    height: 20
+                    visible: uidSala===janela.usuarioID&&!edicao
+                    text: "Remover"
+                    onClicked: removeSala(nomeSala) //todo: adicionar popup de confimação
+                }
             }
 
-            Camera{
-                id:camera
-                imageCapture.onImageSaved: fotosModel.append({"foto": "file:///"+path})
-            }
-        }
+            VideoOutput{
+                id: videoOutput
+                width: 300
+                height: 200
+                source: camera
+                visible: false
 
-        GridView{
-            id:fotosView
-            Layout.alignment:Qt.AlignHCenter
-            width: 300;height: 200
-            contentWidth:100
-            contentHeight: 100
-            clip: true
-            model:fotosModel
-            delegate:
-                Rectangle{
-                    implicitWidth: 100; implicitHeight:100
-                    border.width: 1
-                    Image {
-                        anchors.fill: parent
-                        source: foto
-                        Component.onCompleted: grabToImage(result=>{
-                                                           fotosConvertidasModel.append({"foto":"data:image/png;base64," + converter.toStr(result.image)})
-                                                           })
-                    }
-            }
-        }
+                Button{
+                    width: 100
+                    height: 20
+                    visible: edicao
+                    text: "Tirar Foto"
+                    onClicked: {camera.imageCapture.capture()
+                    videoOutput.visible=false}
+                }
 
-        Row{
-            Layout.alignment:Qt.AlignHCenter
-            spacing: 10
-            Text {
-                text: "Nome:"
+                Camera{
+                    id:camera
+                    imageCapture.onImageSaved: fotosModel.append({"foto": "file:///"+path})
+                }
             }
-            TextField{
-                id:nome
-                width: 100; height: 30
-                enabled: edicao
-            }
-        }
-        Row{
-            Layout.alignment:Qt.AlignHCenter
-            spacing: 10
-            Text {
-                text: "Descrição:"
-            }
-            ScrollView{
-                width: sala.width-100; height: 100
-                TextArea{
-                    id:descricao
-                    anchors.fill: parent
-                    implicitWidth: sala.width-100
-                    implicitHeight: 100
-                    enabled: edicao
-                    background: Rectangle{
-                        anchors.fill: parent
+
+            GridView{
+                id:fotosView
+                Layout.alignment:Qt.AlignHCenter
+                width: sala.width;height: 200
+                contentWidth:100
+                contentHeight: 100
+                clip: true
+                model:fotosModel
+                delegate:
+                    Rectangle{
+                        implicitWidth: 100; implicitHeight:100
                         border.width: 1
+                        Image {
+                            anchors.fill: parent
+                            source: foto
+                            Component.onCompleted: grabToImage(result=>{
+                                                               fotosConvertidasModel.append({"foto":"data:image/png;base64," + converter.toStr(result.image)})
+                                                               })
+                        }
+                }
+            }
+
+            Row{
+                spacing: 10
+                Text {
+                    width: wItens
+                    text: "Nome: "
+                }
+                TextField{
+                    id:nome
+                    width: 300; height: 30
+                    enabled: edicao
+                }
+            }
+            Row{
+                spacing: 10
+                Text {
+                    width: wItens
+                    text: "Valor:"
+                }
+                TextField{
+                    id:valor
+                    width: 100; height: 30
+                    enabled: edicao
+                }
+            }
+            Row{
+                spacing: 10
+                Text {
+                    width: wItens
+                    text: "Tipo:"
+                }
+                ComboBox{
+                    id:cbTipo
+                    width: 200; height: 30
+                    enabled: edicao
+                    model: ["Escritório","Comercial","Consultório","Reuniões","Outro"]
+                }
+            }
+            Row{
+                spacing: 10
+                Text {
+                    width: wItens
+                    text: "Telefone:"
+                }
+                TextField{
+                    id:telefone
+                    width: 100; height: 30
+                    enabled: edicao
+                }
+            }
+            Row{
+                spacing: 10
+                Text {
+                    width: wItens
+                    text: "Endereço:"
+                }
+                ScrollView{
+                    width: sala.width-100; height: 100
+                    TextArea{
+                        id:endereco
+                        anchors.fill: parent
+                        implicitWidth: sala.width-100
+                        implicitHeight: 100
+                        enabled: edicao
+                        background: Rectangle{
+                            anchors.fill: parent
+                            border.width: 1
+                        }
                     }
                 }
             }
-        }
-
-        Button{
-            Layout.alignment:Qt.AlignHCenter
-            width: sala.width; height: 30
-            text: "Salvar"
-            visible: edicao
-            onClicked: {
-                var fotos=[]
-                var count = 0;
-                for(let i =0;i<fotosConvertidasModel.count;i++){
-                    fotos.push(fotosConvertidasModel.get(i))
+            Row{
+                spacing: 10
+                Text {
+                    width: wItens
+                    text: "Descrição:"
                 }
-                updateSala(nome.text,{"nome":nome.text,"descricao":descricao.text,"fotos":fotos})
-                sala.visible=false
-                salasModel.append({"nome":nome.text,"descricao":descricao.text,"fotos":fotos})
+                ScrollView{
+                    width: sala.width-100; height: 100
+                    TextArea{
+                        id:descricao
+                        anchors.fill: parent
+                        implicitWidth: sala.width-100
+                        implicitHeight: 100
+                        enabled: edicao
+                        background: Rectangle{
+                            anchors.fill: parent
+                            border.width: 1
+                        }
+                    }
+                }
+            }
+
+            Button{
+                Layout.alignment:Qt.AlignHCenter
+                width: sala.width; height: 30
+                text: "Salvar"
+                visible: edicao
+                onClicked: {
+                    var fotos=[]
+                    var count = 0;
+                    for(let i =0;i<fotosConvertidasModel.count;i++){
+                        fotos.push(fotosConvertidasModel.get(i))
+                    }
+                    updateSala(nome.text,{"nome":nome.text,"valor":valor.text,"tipo":cbTipo.currentIndex,"telefone":telefone.text,"endereco":endereco.text,"descricao":descricao.text,"fotos":fotos})
+                    sala.visible=false
+                    salasModel.append({"nome":nome.text,"valor":valor.text,"tipo":cbTipo.currentIndex,"telefone":telefone.text,"endereco":endereco.text,"descricao":descricao.text,"fotos":fotos,"uid":janela.usuarioID})
+                }
             }
         }
     }
