@@ -21,6 +21,7 @@ ApplicationWindow {
 
         onTextMessageReceived: {
             salasModel.clear();
+            console.log(message)
             var result = JSON.parse(message)
             if(result.op==="login"){
                 if(result.sucesso){
@@ -29,7 +30,7 @@ ApplicationWindow {
                     telaLogin.visible=false
                     buscaSalas("")
                 } else {
-                    msgLogin.text=result.mensagem
+                    telaLogin.msgLogin=result.mensagem
                 }
             } else if (result.op==="buscaSalas"){
                 for(let i = 0; i<result.list.length;i++){
@@ -88,6 +89,13 @@ ApplicationWindow {
         id:novaSala
         visible: false
         edicao:true
+    }
+
+    Text {
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        text: "Usuário: "+telaLogin.login
+        color: "orange"
     }
 
     Rectangle{

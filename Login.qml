@@ -6,6 +6,8 @@ Rectangle{
     anchors.fill: parent
     property int tWidth: 50
     property alias servidor: servidorField.text
+    property alias msgLogin: msgLogin.text
+    property alias login: loginField.text
 
     Settings{
         category: "AirCNC"
@@ -106,13 +108,7 @@ Rectangle{
             anchors.horizontalCenter: parent.horizontalCenter
             id:btnCadastrar
             text: "Cadastrar"
-            function entrar(){
-                var send={}
-                send.op="login"
-                send.login=loginField.text
-                send.senha=Qt.md5(senhaField.text)
-                socket.sendTextMessage(JSON.stringify(send))
-            }
+            enabled: false
             onClicked: entrar()
         }
     }

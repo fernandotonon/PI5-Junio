@@ -118,7 +118,7 @@ ApplicationWindow {
     function dbInit(){
         console.log(" Iniciando banco...")
 
-        db = LocalStorage.openDatabaseSync("c:/PI5AirCNC", "1.0", "SQLite AirCNC", 100000);
+        db = LocalStorage.openDatabaseSync("c:/PI5AirCNC2", "1.0", "SQLite AirCNC", 100000);
         db.transaction( function(tx) {
             print('... Criando tabela')
             tx.executeSql('CREATE TABLE IF NOT EXISTS salas(nome TEXT, valor TEXT, usuarioID INTEGER)');
@@ -134,23 +134,18 @@ ApplicationWindow {
             return ;
         }
 
-        var salaObj={};
-        salaObj.nome = obj.nome
-        salaObj.descricao = obj.descricao
-        salaObj.fotos = obj.fotos
-
         db.transaction(function(tx){
             var result = tx.executeSql('SELECT * from salas where nome = ?',[nome]);
 
             if ( result.rows.length ===1 ){
                 console.log("Atualizando a tabela...")
                 result = tx.executeSql('UPDATE salas set valor=? where nome=? and usuarioID = ?',
-                                        [JSON.stringify(salaObj),nome, usuario])
+                                        [JSON.stringify(obj),nome, usuario])
                 console.log(JSON.stringify(result));
             }else{
                 console.log("Adicionando uma linha...")
                 result = tx.executeSql('INSERT INTO salas VALUES (?,?,?)',
-                                        [nome, JSON.stringify(salaObj),usuario])
+                                        [nome, JSON.stringify(obj),usuario])
             }
 
         });
@@ -246,6 +241,9 @@ ApplicationWindow {
                                         [login,senha])
                 obj.sucesso=true
                 console.log("novo usuário")
+
+                result = tx.executeSql('SELECT * from usuarios where login = ?',[login]);
+                obj.id=result.rows[0].id
             }
 
         });

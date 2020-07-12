@@ -51,6 +51,17 @@ Rectangle{
             anchors.fill: sala
             spacing: 5
 
+            Button{
+                Layout.alignment:Qt.AlignHCenter
+                width: sala.width; height: 30
+                text: "Cancelar"
+                visible: edicao
+                onClicked: {
+                    salasModel.clear()
+                    fotosConvertidasModel.clear()
+                    sala.visible=false
+                }
+            }
             Row{
                 Layout.alignment:Qt.AlignHCenter
                 spacing: 20
@@ -88,6 +99,8 @@ Rectangle{
                 visible: false
 
                 Button{
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottom: parent.bottom
                     width: 100
                     height: 20
                     visible: edicao
@@ -120,6 +133,13 @@ Rectangle{
                             Component.onCompleted: grabToImage(result=>{
                                                                fotosConvertidasModel.append({"foto":"data:image/png;base64," + converter.toStr(result.image)})
                                                                })
+                            MouseArea{
+                                anchors.fill: parent
+                                onClicked: {
+                                    imgFull.source=parent.source
+                                    imgFull.visible=true
+                                }
+                            }
                         }
                 }
             }
@@ -232,6 +252,15 @@ Rectangle{
                     salasModel.append({"nome":nome.text,"valor":valor.text,"tipo":cbTipo.currentIndex,"telefone":telefone.text,"endereco":endereco.text,"descricao":descricao.text,"fotos":fotos,"uid":janela.usuarioID})
                 }
             }
+        }
+    }
+    Image{
+        id:imgFull
+        anchors.fill: parent
+        visible: false
+        MouseArea{
+            anchors.fill: parent
+            onClicked: parent.visible=false
         }
     }
 }
