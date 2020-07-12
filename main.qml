@@ -17,7 +17,7 @@ ApplicationWindow {
     WebSocket{
         id: socket
         active: true
-        url:"ws://"+servidorField.text+":1234"
+        url:"ws://"+telaLogin.servidor+":1234"
 
         onTextMessageReceived: {
             salasModel.clear();
@@ -94,6 +94,7 @@ ApplicationWindow {
         id:filtroLayout
         anchors.fill: parent
         visible: false
+        onVisibleChanged: filtro.text=""
         ColumnLayout{
             anchors.fill: parent
             Row{
@@ -115,111 +116,18 @@ ApplicationWindow {
                         filtroLayout.visible=false
                     }
                 }
+                Button{
+                    width: 100
+                    height: 30
+                    text: "cancelar"
+                    onClicked: filtroLayout.visible=false
+                }
             }
         }
     }
 
-    Rectangle{
+    Login{
         id:telaLogin
-        anchors.fill: parent
-
-        Image{
-            anchors.fill:parent
-            source: "index.jpeg"
-        }
-
-        Column{
-            anchors.centerIn: parent
-            spacing: 10
-
-            Image{
-                anchors.horizontalCenter: parent.horizontalCenter
-                height: 100
-                fillMode: Image.PreserveAspectFit
-                source: "logo.png"
-            }
-
-            Text{
-                anchors.horizontalCenter: parent.horizontalCenter
-                text:"AirCNC"
-                color: "white"
-                font.bold: true
-                font.pixelSize: 30
-            }
-
-            Row{
-                anchors.horizontalCenter: parent.horizontalCenter
-                Text{
-                    text:"Servidor: "
-                    color: "white"
-                }
-                TextField{
-                    id:servidorField
-                    width: 100; height: 30
-                    focus: true
-                    text:"127.0.0.1"
-                }
-            }
-
-            Row{
-                anchors.horizontalCenter: parent.horizontalCenter
-                Text{
-                    text:"Login: "
-                    color: "white"
-                }
-                TextField{
-                    id:loginField
-                    width: 100; height: 30
-                    focus: true
-                }
-            }
-            Row{
-                anchors.horizontalCenter: parent.horizontalCenter
-                Text{
-                    text:"Senha: "
-                    color: "white"
-                }
-                TextField{
-                    id:senhaField
-                    width: 100; height: 30
-                    echoMode: TextInput.Password
-                    onAccepted: btnEntrar.entrar()
-                }
-            }
-            Text {
-                id: msgLogin
-                text: " "
-            }
-            Row{
-                anchors.horizontalCenter: parent.horizontalCenter
-                Button{
-                    id:btnEntrar
-                    text: "Entrar"
-                    function entrar(){
-                        socket.active=true
-                        var send={}
-                        send.op="login"
-                        send.login=loginField.text
-                        send.senha=Qt.md5(senhaField.text)
-                        socket.sendTextMessage(JSON.stringify(send))
-                    }
-                    onClicked: entrar()
-                }
-            }
-            Button{
-                anchors.horizontalCenter: parent.horizontalCenter
-                id:btnCadastrar
-                text: "Cadastrar"
-                function entrar(){
-                    var send={}
-                    send.op="login"
-                    send.login=loginField.text
-                    send.senha=Qt.md5(senhaField.text)
-                    socket.sendTextMessage(JSON.stringify(send))
-                }
-                onClicked: entrar()
-            }
-        }
     }
 
     footer: TabBar {

@@ -6,6 +6,10 @@ int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
+    QCoreApplication::setApplicationName("AirCNC");
+    QCoreApplication::setOrganizationName("Projeto Integrador");
+    QCoreApplication::setOrganizationDomain("br.com.AirCNC");
+
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;

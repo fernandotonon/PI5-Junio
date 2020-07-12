@@ -4,5 +4,6 @@
         <file>Sala.qml</file>
         <file>index.jpeg</file>
         <file>logo.png</file>
+        <file>Login.qml</file>
     </qresource>
 </RCC>

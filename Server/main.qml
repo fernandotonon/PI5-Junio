@@ -122,7 +122,7 @@ ApplicationWindow {
         db.transaction( function(tx) {
             print('... Criando tabela')
             tx.executeSql('CREATE TABLE IF NOT EXISTS salas(nome TEXT, valor TEXT, usuarioID INTEGER)');
-            tx.executeSql('CREATE TABLE IF NOT EXISTS usuarios(id INTEGER PRIMARY KEY AUTOINCREMENT, login TEXT, senha TEXT)');
+            tx.executeSql('CREATE TABLE IF NOT EXISTS usuarios(id INTEGER PRIMARY KEY AUTOINCREMENT, login TEXT, senha TEXT, nome TEXT, email TEXT)');
         });
     }
 
@@ -244,6 +244,31 @@ ApplicationWindow {
             }else{
                 result = tx.executeSql('INSERT INTO usuarios (login,senha) VALUES (?,?)',
                                         [login,senha])
+                obj.sucesso=true
+                console.log("novo usuário")
+            }
+
+        });
+        return JSON.stringify(obj)
+    }
+    function cadastrarUsuario(login, senha, nome, email){
+        var obj = {}
+        obj.op="cadastrarUsuario"
+        obj.sucesso = false
+        if (!db){
+            obj.messagem="Erro no servidor"
+            return JSON.stringify(obj)
+        }
+
+        db.transaction(function(tx){
+            var result = tx.executeSql('SELECT * from usuarios where login = ? or email = ?',[login,email]);
+
+            if ( result.rows.length >= 1 ){
+                obj.sucesso=false
+                obj.mensagem="Usuário já cadastrado"
+            }else{
+                result = tx.executeSql('INSERT INTO usuarios (login,senha,nome,email) VALUES (?,?,?,?)',
+                                        [login,senha,nome,email])
                 obj.sucesso=true
                 console.log("novo usuário")
             }
